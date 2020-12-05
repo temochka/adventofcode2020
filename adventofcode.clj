@@ -103,3 +103,41 @@
 (day-4-1)
 (day-4-2)
 
+(def input-5-1 (lines "5-1.txt"))
+
+(defn day-5-1 []
+  (let [parse (fn [l r [i & rst]]
+                (if (= l r)
+                  l
+                  (case i
+                    (\F \L) (recur l (- r (inc (quot (- r l) 2))) rst)
+                    (\B \R) (recur (+ l (inc (quot (- r l) 2))) r rst))))
+        pass-id (fn [pass]
+                  (let [[row-pass col-pass] (partition-by (comp boolean #{\F \B}) pass)
+                        row (parse 0 127 row-pass)
+                        col (parse 0 7 col-pass)]
+                    (+ (* row 8) col)))]
+    (->> input-5-1
+         (map pass-id)
+         (apply max-key identity))))
+
+(day-5-1)
+
+(defn day-5-2 []
+  (let [parse (fn [l r [i & rst]]
+                (if (= l r)
+                  l
+                  (case i
+                    (\F \L) (recur l (- r (inc (quot (- r l) 2))) rst)
+                    (\B \R) (recur (+ l (inc (quot (- r l) 2))) r rst))))
+        pass-id (fn [pass]
+                  (let [[row-pass col-pass] (partition-by (comp boolean #{\F \B}) pass)
+                        row (parse 0 127 row-pass)
+                        col (parse 0 7 col-pass)]
+                    (+ (* row 8) col)))
+        booked-seats (->> input-5-1 (map pass-id) set)
+        all-seats (set (range 40 801))]
+    (clojure.set/difference all-seats booked-seats)))
+
+(day-5-2)
+
