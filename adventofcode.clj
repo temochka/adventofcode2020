@@ -141,3 +141,29 @@
 
 (day-5-2)
 
+(def input-6-1 (lines "6-1.txt"))
+
+(defn day-6-1 []
+  (transduce
+    (comp (partition-by empty?) (map #(count (set (apply concat %)))))
+    +
+    input-6-1))
+
+(day-6-1)
+
+
+(defn day-6-2 []
+  (transduce
+    (comp
+      (partition-by empty?)
+      (map (fn [answers]
+             (->> answers
+                  (apply concat)
+                  frequencies
+                  (keep #(when (= (count answers) (val %)) (key %)))
+                  count))))
+    +
+    input-6-1))
+
+(day-6-2)
+
