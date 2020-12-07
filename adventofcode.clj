@@ -167,3 +167,31 @@
 
 (day-6-2)
 
+(def input-7-1 (lines "7-1.txt"))
+(def input-7-1-example (lines "7-1-example.txt"))
+
+(defn day-7-1 []
+  (let [index
+        (->> input-7-1
+             (map (juxt #(re-find #"^\w+ \w+" %) #(re-seq #"(\d+) (\w+ \w+)" %)))
+             (mapcat (fn [[col subcols]] (map (fn [[_ _ subcol]] [subcol col]) subcols)))
+             (reduce (fn [acc [subcol col]] (update acc subcol #(conj % col))) {}))
+        traverse (fn f [col] (reduce clojure.set/union #{col} (into #{} (map #(f %)) (index col))))]
+    (dec (count (traverse "shiny gold")))))
+
+
+(day-7-1)
+
+(def input-7-2-example (lines "7-2-example.txt"))
+
+(defn day-7-2 []
+  (let [index
+        (->> input-7-1
+             (map (juxt #(re-find #"^\w+ \w+" %) #(re-seq #"(\d+) (\w+ \w+)" %)))
+             (mapcat (fn [[col subcols]] (map (fn [[_ n subcol]] [col [subcol (Integer/parseInt n)]]) subcols)))
+             (reduce (fn [acc [col [subcol n]]] (update acc col #(assoc % subcol n))) {}))
+        traverse (fn f [col n] (+ n (* n (reduce + (map #(f (key %) (val %)) (index col))))))]
+    (dec (traverse "shiny gold" 1))))
+
+(day-7-2)
+
