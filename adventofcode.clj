@@ -257,7 +257,6 @@
 
 (day-9-1)
 
-
 (defn day-9-2 []
   (let [invalid-number (day-9-1)]
     (->> (range (count input-9-1))
@@ -273,4 +272,38 @@
          ((fn [xs] (+ (apply min xs) (apply max xs)))))))
 
 (day-9-2)
+
+(def input-10-1 (mapv #(Integer/parseInt %) (lines "10-1.txt")))
+
+(defn day-10-1 []
+  (->> input-10-1
+       (cons 0)
+       (cons (+ 3 (apply max input-10-1)))
+       sort
+       (partition 2 1)
+       (map (fn [[a b]] (- b a)))
+       frequencies
+       vals
+       (apply *)))
+
+(day-10-1)
+
+(defn day-10-2 []
+  (let [in (->> input-10-1 sort)
+        max-x (apply max in)
+        cache (atom {})]
+    (letfn [(with-cache [f & args]
+              ((swap! cache update args #(or % (apply f args))) args))
+            (count-arrangements [[x & rst] last-x]
+              (cond
+                (or (nil? x) (< max-x x)) 0N
+                (= max-x x) 1N
+                :else
+                (->> rst
+                     (take-while #(<= (- % x) 3))
+                     (map-indexed (fn [i _] (with-cache count-arrangements (drop i rst) x)))
+                     (reduce +))))]
+      (count-arrangements (cons 0 in) 0))))
+
+(day-10-2)
 
