@@ -239,3 +239,38 @@
 
 (day-8-2)
 
+(def input-9-1 (mapv bigint (lines "9-1.txt")))
+
+(defn day-9-1 []
+  (let [valid? (fn [[x & rest] n pairs]
+                 (if (pairs x)
+                   true
+                   (when rest (recur rest n (conj pairs (- n x))))))] 
+
+    (->> input-9-1
+         (partition 26 1)
+         (keep (fn [xs]
+                 (let [preamble (take 25 xs)
+                       n (first (drop 25 xs))]
+                   (when-not (valid? preamble n #{}) n))))
+         first)))
+
+(day-9-1)
+
+
+(defn day-9-2 []
+  (let [invalid-number (day-9-1)]
+    (->> (range (count input-9-1))
+         (keep (fn [i]
+                 (->> (drop i input-9-1)
+                      (reduce (fn [[xs sum] x]
+                                (cond
+                                  (= (+ sum x) invalid-number) (reduced [(conj xs x) (+ sum x)])
+                                  (< (+ sum x) invalid-number) [(conj xs x) (+ sum x)]
+                                  :else (reduced nil)))
+                              [[] 0]))))
+         ffirst
+         ((fn [xs] (+ (apply min xs) (apply max xs)))))))
+
+(day-9-2)
+
