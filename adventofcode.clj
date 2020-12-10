@@ -1,4 +1,5 @@
 (ns advent-of-code
+  (:require [clojure.set])
   (:import (java.lang Integer)))
 
 (defn lines [file] (with-open [rdr (clojure.java.io/reader file)] (doall (line-seq rdr))))
@@ -194,4 +195,47 @@
     (dec (traverse "shiny gold" 1))))
 
 (day-7-2)
+
+(def input-8-1 (lines "8-1.txt"))
+
+(defn day-8-1 []
+  (let [memory (->> input-8-1
+                    (map #(re-matches #"^(\w+) ([-+]\d+)$" %))
+                    (mapv (fn [[_ inst n]] [inst (Integer/parseInt n)])))
+        step (fn [{:keys [ir acc]}]
+               (when-let [[inst arg] (nth memory ir)]
+                 (case inst
+                   "acc" {:ir (inc ir) :acc (+ acc arg)}
+                   "jmp" {:ir (+ ir arg) :acc acc}
+                   "nop" {:ir (inc ir) :acc acc})))]
+    (loop [computer {:ir 0 :acc 0}
+           instructions #{}]
+      (if (instructions (:ir computer))
+        (:acc computer)
+        (recur (step computer) (conj instructions (:ir computer)))))))
+
+(day-8-1)
+
+(def input-8-1-example (lines "8-1-example.txt"))
+
+(defn day-8-2 []
+  (let [init-memory (->> input-8-1
+                         (map #(re-matches #"^(\w+) ([-+]\d+)$" %))
+                         (mapv (fn [[_ inst n]] [inst (Integer/parseInt n)])))
+        flipped-memory (map (fn [[i n]] [({"nop" "jmp" "jmp" "nop"} i i) n]) init-memory)
+        step (fn f [{:keys [ir acc stack memory] :as computer}]
+               (when-not (stack ir)
+                 (if-let [[inst arg] (nth memory ir nil)]
+                     (f
+                       (case inst
+                         "acc" (assoc computer :ir (inc ir) :acc (+ acc arg) :stack (conj stack ir))
+                         "jmp" (assoc computer :ir (+ ir arg) :stack (conj stack ir))
+                         "nop" (assoc computer :ir (inc ir) :stack (conj stack ir))))
+                   (when (= ir (count memory)) acc))))]
+    (->> flipped-memory
+         (map-indexed #(step {:memory (assoc init-memory %1 %2) :ir 0 :acc 0 :stack #{}}))
+         (keep identity)
+         first)))
+
+(day-8-2)
 
